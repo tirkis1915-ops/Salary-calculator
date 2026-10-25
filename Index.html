@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Hourly to Annual Salary Calculator</title>
+<meta name="description" content="Convert your hourly wage to annual, monthly, weekly and daily pay. Adjust hours per week, weeks worked and tax.">
+<style>
+:root {
+  --bg: #f6f7f9; --card: #ffffff; --text: #1a1d21; --muted: #5f6672;
+  --border: #d9dde3; --accent: #2563eb; --accent-text: #ffffff;
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0f1115; --card: #181b21; --text: #e9ecf1; --muted: #9aa3b2;
+    --border: #2c313b; --accent: #5b8def; --accent-text: #0b1020;
+    color-scheme: dark;
+  }
+}
+* { box-sizing: border-box; }
+body {
+  margin: 0; background: var(--bg); color: var(--text);
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  line-height: 1.5; min-height: 100vh;
+}
+main { max-width: 680px; margin: 0 auto; padding: 24px 16px 48px; }
+h1 { font-size: 1.6rem; margin: 0 0 4px; }
+.sub { color: var(--muted); margin: 0 0 24px; }
+.card {
+  background: var(--card); border: 1px solid var(--border);
+  border-radius: 12px; padding: 20px; margin-bottom: 16px;
+}
+.grid { display: grid; gap: 14px; grid-template-columns: 1fr 1fr; }
+@media (max-width: 520px) { .grid { grid-template-columns: 1fr; } }
+label { display: flex; flex-direction: column; gap: 6px; font-size: 0.9rem; color: var(--muted); }
+input[type="number"] {
+  font: inherit; font-size: 1rem; color: var(--text); background: var(--bg);
+  border: 1px solid var(--border); border-radius: 8px; padding: 10px 12px; width: 100%;
+}
+input[type="number"]:focus { outline: 2px solid var(--accent); outline-offset: 1px; }
+.result-main { text-align: center; padding: 8px 0 4px; }
+.result-main .label { color: var(--muted); font-size: 0.9rem; }
+.result-main .value { font-size: 2.4rem; font-weight: 700; color: var(--accent); }
+.breakdown { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 12px; margin-top: 16px; }
+.item { border: 1px solid var(--border); border-radius: 10px; padding: 12px; }
+.item .k { color: var(--muted); font-size: 0.85rem; }
+.item .v { font-size: 1.15rem; font-weight: 600; }
+.note { color: var(--muted); font-size: 0.85rem; margin-top: 12px; }
+h2 { font-size: 1.1rem; margin: 24px 0 8px; }
+</style>
+</head>
+<body>
+<main>
+  <h1>Hourly to Annual Salary Calculator</h1>
+  <p class="sub">Convert your hourly wage into yearly, monthly, weekly and daily pay.</p>
+
+  <div class="card">
+    <div class="grid">
+      <label>Hourly rate ($)
+        <input type="number" id="rate" min="0" step="0.01" value="25">
+      </label>
+      <label>Hours per week
+        <input type="number" id="hours" min="0" step="0.5" value="40">
+      </label>
+      <label>Weeks worked per year
+        <input type="number" id="weeks" min="0" max="52" step="0.5" value="52">
+      </label>
+      <label>Estimated tax rate (%)
+        <input type="number" id="tax" min="0" max="100" step="0.5" value="0">
+      </label>
+    </div>
+    <p class="note">Set weeks worked lower to account for unpaid leave or holidays. Tax rate is a simple flat estimate, not a tax calculation.</p>
+  </div>
+
+  <div class="card">
+    <div class="result-main">
+      <div class="label">Estimated annual salary (before tax)</div>
+      <div class="value" id="annual">$0</div>
+    </div>
+    <div class="breakdown">
+      <div class="item"><div class="k">Monthly</div><div class="v" id="monthly">$0</div></div>
+      <div class="item"><div class="k">Weekly</div><div class="v" id="weekly">$0</div></div>
+      <div class="item"><div class="k">Daily</div><div class="v" id="daily">$0</div></div>
+      <div class="item"><div class="k">Annual after tax</div><div class="v" id="net">$0</div></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>How it works</h2>
+    <p>Annual salary = hourly rate × hours per week × weeks worked per year. Monthly pay is annual divided by 12, weekly is hourly rate × hours per week, and daily assumes hours per week are spread evenly across 5 workdays.</p>
+    <p>Real take-home pay depends on your country, filing status, deductions and benefits. Use this calculator for planning, not as tax advice.</p>
+  </div>
+</main>
+
+<script>
+const $ = id => document.getElementById(id);
+const fmt = n => new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" }).format(isFinite(n) ? n : 0);
+const num = id => Math.max(0, parseFloat($(id).value) || 0);
+
+function update() {
+  const rate = num("rate"), hours = num("hours"), weeks = Math.min(num("weeks"), 52), tax = Math.min(num("tax"), 100);
+  const weekly = rate * hours;
+  const annual = weekly * weeks;
+  $("annual").textContent = fmt(annual);
+  $("monthly").textContent = fmt(annual / 12);
+  $("weekly").textContent = fmt(weekly);
+  $("daily").textContent = fmt(weekly / 5);
+  $("net").textContent = fmt(annual * (1 - tax / 100));
+}
+
+["rate", "hours", "weeks", "tax"].forEach(id => $(id).addEventListener("input", update));
+update();
+</script>
+</body>
+</html>
